@@ -12,8 +12,6 @@ import $ from 'jquery';
 import _ from 'lodash';
 
 import moment from 'moment';
-window.moment = moment;
-window._ = _
 
 var history = window.history;
 
@@ -186,8 +184,8 @@ class App extends React.Component {
     }
     var hidden_images = [];
     for (let index of _.range(this.index - 5, this.index + 5)) {
-      if (this.state.images.ticks && this.state.images.ticks.hasOwnProperty(index)) {
-        var load_url = this.state.images.get(this.state.images.ticks[index])[1];
+      if (this.ticks && this.ticks.hasOwnProperty(index)) {
+        var load_url = this.state.images.get(this.ticks[index])[1];
         hidden_images.push(<img class="d-none" src={load_url} alt="" />);
       }
     }
