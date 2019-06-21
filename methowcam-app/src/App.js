@@ -88,12 +88,12 @@ class App extends React.Component {
 
   onKeyPress(e) {
     var date;
-    if (e.code === 'KeyJ' && this.index > 0) {
-      this.index -= 1;
-      this.setState({selected: this.ticks[this.index]})
-    } else if (e.code === 'KeyK' && this.index < this.ticks.length - 1) {
-      this.index += 1;
-      this.setState({selected: this.ticks[this.index]})
+    if (!this.state.images) return;
+    var index = this.state.images.ticks.indexOf(this.state.selected);
+    if (e.code === 'KeyJ' && index > 0) {
+      this.setState({selected: this.state.images.ticks[index - 1]})
+    } else if (e.code === 'KeyK' && index < this.state.images.ticks.length - 1) {
+      this.setState({selected: this.state.images.ticks[index + 1]})
     } else if (e.code === 'KeyH') {
       date = this.state.date.clone();
       date.subtract(1, 'day');
@@ -121,7 +121,6 @@ class App extends React.Component {
   }
 
   onSliderChange(value) {
-    this.index = this.ticks.indexOf(value);
     this.setState({selected:value});
   }
 
@@ -130,8 +129,7 @@ class App extends React.Component {
       if (date === this.state.date && cam === this.state.camera) {
         var images = new Map();
         var selected = this.state.selected;
-        this.ticks = []
-        this.index = null;
+        images.ticks = []
         for (let [image, url] of json) {
           var ts = image.slice(image.indexOf('/') + 1);
           var t = moment(ts, "YYYY-MM-DD-HH-mm");
@@ -139,13 +137,11 @@ class App extends React.Component {
           images.set(minutes, [t.format("h:mma"), url])
           if (Math.abs(minutes - this.state.selected) < 5) {
             selected = minutes;
-            this.index = this.ticks.length;
           }
-          this.ticks.push(minutes);
+          images.ticks.push(minutes);
         }
-        if (selected === null && this.ticks) {
-          this.index = this.ticks.length - 1;
-          selected = this.ticks[this.index];
+        if (selected === null && images.ticks) {
+          selected = images.ticks[images.ticks.length - 1];
         }
         this.setState({images: images, selected: selected});
       }
@@ -183,10 +179,13 @@ class App extends React.Component {
       image = <img src={img_url} alt={this.state.camera} class="container-fluid"/>;
     }
     var hidden_images = [];
-    for (let index of _.range(this.index - 5, this.index + 5)) {
-      if (this.ticks && this.ticks.hasOwnProperty(index)) {
-        var load_url = this.state.images.get(this.ticks[index])[1];
-        hidden_images.push(<img class="d-none" src={load_url} alt="" />);
+    if (this.state.images.ticks) {
+      var index_s = this.state.images.ticks.indexOf(this.state.selected);
+      for (let index of _.range(index_s - 5, index_s + 5)) {
+        if (this.state.images.ticks && this.state.images.ticks.hasOwnProperty(index)) {
+          var load_url = this.state.images.get(this.state.images.ticks[index])[1];
+          hidden_images.push(<img class="d-none" src={load_url} alt="" />);
+        }
       }
     }
     return (
