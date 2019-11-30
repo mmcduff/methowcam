@@ -208,6 +208,7 @@ class App extends React.Component {
                 >
                 <option>south</option>
                 <option>west</option>
+                <option>westhd</option>
               </select>
             </div>
             <div class="col-md-10">
