@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
-import { Slider } from 'antd';
+import { Slider, Icon, Tooltip } from 'antd';
 import 'antd/dist/antd.css';
 
 import $ from 'jquery';
@@ -16,6 +16,17 @@ import moment from 'moment';
 var history = window.history;
 
 var cache = {};
+
+function bisect_left(a , x) {
+    var lo = 0;
+    var hi = a.length;
+    while ( lo < hi ) {
+        const mid = ( lo + hi ) / 2 | 0 ;
+        if ( x > a[mid] ) lo = mid + 1 ;
+        else hi = mid ;
+    }
+    return lo ;
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -89,10 +100,13 @@ class App extends React.Component {
   onKeyPress(e) {
     var date;
     if (!this.state.images) return;
-    var index = this.state.images.ticks.indexOf(this.state.selected);
+    var index = bisect_left(this.state.images.ticks, this.state.selected);
     if (e.code === 'KeyJ' && index > 0) {
       this.setState({selected: this.state.images.ticks[index - 1]})
     } else if (e.code === 'KeyK' && index < this.state.images.ticks.length - 1) {
+      if (this.state.images.ticks[index] !== this.state.selected) {
+        index -= 1;
+      }
       this.setState({selected: this.state.images.ticks[index + 1]})
     } else if (e.code === 'KeyH') {
       date = this.state.date.clone();
@@ -176,7 +190,7 @@ class App extends React.Component {
     var image = null;
     if (this.state.images.has(this.state.selected)) {
       var img_url = this.state.images.get(this.state.selected)[1];
-      image = <img src={img_url} alt={this.state.camera} class="container-fluid"/>;
+      image = <img src={img_url} alt={this.state.camera} className="container-fluid"/>;
     }
     var hidden_images = [];
     if (this.state.images.ticks) {
@@ -184,16 +198,25 @@ class App extends React.Component {
       for (let index of _.range(index_s - 5, index_s + 5)) {
         if (this.state.images.ticks && this.state.images.ticks.hasOwnProperty(index)) {
           var load_url = this.state.images.get(this.state.images.ticks[index])[1];
-          hidden_images.push(<img class="d-none" src={load_url} alt="" />);
+          hidden_images.push(<img className="d-none" src={load_url} alt="" key={load_url} />);
         }
       }
     }
+    var tooltip = <div>
+      Use J/K to change time <br/>
+      Use H/L to change date
+    </div>;
     return (
       <div className="App">
-        <div class="container-fluid pt-2">
-          <div class="row">
-            <div class="col-md-2">
-              <div class="w-50 m-0 float-left">
+        <div className="container-fluid pt-2">
+          <div className="row">
+            <div className="col-md-2" style={{display: 'flex'}}>
+              <div className="my-0 mx-2">
+                <Tooltip title={tooltip}>
+                  <Icon type="info-circle" />
+                </Tooltip>
+              </div>
+              <div className="w-50 m-0">
                 <DatePicker
                   selected={this.state.date.toDate()}
                   onChange={this.handleDateChange.bind(this)}
@@ -202,7 +225,7 @@ class App extends React.Component {
                 />
               </div>
               <select
-                class="form-control-sm w-50 m-0 float-right"
+                className="form-control-sm w-50 m-0"
                 onChange={this.handleCameraChange.bind(this)}
                 value={this.state.camera}
                 >
@@ -211,7 +234,7 @@ class App extends React.Component {
                 <option>westhd</option>
               </select>
             </div>
-            <div class="col-md-10">
+            <div className="col-md-10">
               <Slider
                 min={0}
                 max={60*24}
