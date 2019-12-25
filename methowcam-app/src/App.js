@@ -149,7 +149,7 @@ class App extends React.Component {
           var t = moment(ts, "YYYY-MM-DD-HH-mm");
           var minutes = t.diff(this.state.date, 'minutes');
           images.set(minutes, [t.format("h:mma"), url])
-          if (Math.abs(minutes - this.state.selected) < 5) {
+          if (this.state.selected !== null && Math.abs(minutes - this.state.selected) < 5) {
             selected = minutes;
           }
           images.ticks.push(minutes);
@@ -232,6 +232,7 @@ class App extends React.Component {
                 <option>south</option>
                 <option>west</option>
                 <option>westhd</option>
+                <option>shed</option>
               </select>
             </div>
             <div className="col-md-10">
