@@ -5,7 +5,7 @@ import boto3
 
 @functools.lru_cache()
 def get_boto3_client():
-  return boto3.client('s3')
+  return boto3.client('s3', region_name='us-west-2')
 
 def sign_s3_url(image):
   s3_client = get_boto3_client()
@@ -17,6 +17,9 @@ def sign_s3_url(image):
     },
     ExpiresIn=86400,
   )
+  
+def cloudfront_url(image):
+  return 'https://static.methowcam.mmcduff.com/' + image
 
 def get_images(event, context):
   camera = event['queryStringParameters']['camera']
@@ -27,10 +30,11 @@ def get_images(event, context):
     Prefix=f"{camera}/{date}",
   )
   images = sorted([x['Key'] for x in response.get('Contents', [])])
-  images_with_urls = [(x, sign_s3_url(x)) for x in images]
+  images_with_urls = [(x, cloudfront_url(x)) for x in images]
   return {
     "isBase64Encoded": False,
     "statusCode": 200,
     "headers": {'Access-Control-Allow-Origin': '*'},
     "body": json.dumps(images_with_urls),
   }
+
